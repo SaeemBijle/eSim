@@ -61,25 +61,24 @@ function createConfigFile
 
 function installNghdl
 {
-
     echo "Installing NGHDL..........................."
-    unzip -o nghdl.zip
-    cd nghdl/
-    chmod +x install-nghdl.sh
 
-    # Do not trap on error of any command. Let NGHDL script handle its own errors.
-    trap "" ERR
+    if command -v nghdl >/dev/null 2>&1; then
+        echo "NGHDL is already installed. Skipping installation."
+    else
+        unzip -o ../MacOS/nghdl.zip
+        cd nghdl/
+        chmod +x install-nghdl.sh
 
-    ./install-nghdl.sh --install       # Install NGHDL
-        
-    # Set trap again to error_exit function to exit on errors
-    trap error_exit ERR
+        trap "" ERR
+        ./install-nghdl.sh --install
+        trap error_exit ERR
+
+        cd ../
+    fi
 
     ngspiceFlag=1
-    cd ../
-
 }
-
 
 function installSky130Pdk
 {
@@ -87,7 +86,7 @@ function installSky130Pdk
     echo "Installing SKY130 PDK......................"
     
     # Extract SKY130 PDK
-    tar -xJf library/sky130_fd_pr.tar.xz
+    tar -xJf ../MacOS/library/sky130_fd_pr.tar.xz
 
     # Remove any previous sky130-fd-pdr instance, if any
     sudo rm -rf /usr/share/local/sky130_fd_pr
@@ -133,7 +132,7 @@ function installKicad
                 fi
             else
                 echo "KiCad 8.0 is already installed."
-                exit 0
+                return 0
             fi
         fi
 
@@ -229,17 +228,17 @@ function copyKicadLibrary
 {
 
     #Extract custom KiCad Library
-    tar -xJf library/kicadLibrary.tar.xz
+    tar -xJf ../MacOS/library/kicadLibrary.tar.xz
 
-    if [ -d ~/.config/kicad/6.0 ];then
+    if [ -d ~/.config/kicad/8.0 ];then
         echo "kicad config folder already exists"
     else 
         echo ".config/kicad/6.0 does not exist"
-        mkdir -p ~/.config/kicad/6.0
+        mkdir -p ~/.config/kicad/8.0
     fi
 
     # Copy symbol table for eSim custom symbols 
-    cp kicadLibrary/template/sym-lib-table ~/.config/kicad/6.0/
+    cp kicadLibrary/template/sym-lib-table ~/.config/kicad/8.0/
     echo "symbol table copied in the directory"
 
     # Copy KiCad symbols made for eSim
@@ -265,7 +264,7 @@ function createDesktopStartScript
 
     # Generating new esim-start.sh
     echo '#!/bin/bash' > esim-start.sh
-    echo "cd $eSim_Home/src/frontEnd" >> esim-start.sh
+    echo "cd $eSim_Home/../MacOS/src/frontEnd" >> esim-start.sh
     echo "source $config_dir/env/bin/activate" >> esim-start.sh
     echo "python3 Application.py" >> esim-start.sh
 
@@ -315,7 +314,7 @@ function createDesktopStartScript
     trap error_exit ERR
 
     # Copying logo.png to .esim directory to access as icon
-    cp -vp images/logo.png $config_dir
+    cp -vp ../MacOS/images/logo.png $config_dir
 
 }
 
